@@ -16,6 +16,8 @@ createConnection().then(db => {
 
 
     //endpoints
+
+    //Get all products
     app.get('/api/products', async (req: Request, res: Response) => {
         const products = await productRepository.find();
         res.json(products)
@@ -25,6 +27,12 @@ createConnection().then(db => {
         const product = await productRepository.create(req.body);
         const result = await productRepository.save(product);
         res.send(result);
+    })
+
+    //Get single product from list of product
+    app.get('/api/products/:id', async (req: Request, res: Response) => {
+        const product = await productRepository.findOne(req.params.id);
+        res.send(product)
     })
 
 

@@ -8,7 +8,6 @@ createConnection().then(db => {
     //db details
     const productRepository = db.getRepository(Product);
 
-
     const app = express();
     //middlewares
     app.use(cors());

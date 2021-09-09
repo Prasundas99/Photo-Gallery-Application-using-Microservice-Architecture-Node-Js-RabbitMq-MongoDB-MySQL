@@ -27,13 +27,13 @@ createConnection().then(db => {
     app.post('/api/products', async (req: Request, res: Response) => {
         const product = await productRepository.create(req.body);
         const result = await productRepository.save(product);
-        res.send(result);
+        return res.send(result);
     })
 
     //Get single product from list of product
     app.get('/api/products/:id', async (req: Request, res: Response) => {
         const product = await productRepository.findOne(req.params.id);
-        res.send(product)
+        return res.send(product)
     })
 
     //Update a single product from list of product
@@ -41,8 +41,23 @@ createConnection().then(db => {
         const product = await productRepository.findOne(req.params.id);
         productRepository.merge(product, req.body);
         const result = await productRepository.save(product);
-        res.send(result);
+        return res.send(result);
     })
+
+    //Delete a single product
+    app.delete('/api/products/:id', async (req: Request, res: Response) => {
+        const result = await productRepository.delete(req.params.id);
+        return res.send(result);
+    })
+
+    //Request where we like the product
+    app.post('/api/products/:id/like', async (req: Request, res: Response) => {
+        const product = await productRepository.findOne(req.params.id);
+        product.likes++;
+        const result = await productRepository.save(product);
+        return res.send(result);
+    })
+
 
     //server at PORT 5000
     const PORT = process.env.PORT || 5000;

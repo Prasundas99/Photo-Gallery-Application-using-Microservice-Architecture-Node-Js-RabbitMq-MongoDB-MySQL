@@ -23,6 +23,7 @@ createConnection().then(db => {
         res.json(products)
     })
 
+    //Create a single product to db
     app.post('/api/products', async (req: Request, res: Response) => {
         const product = await productRepository.create(req.body);
         const result = await productRepository.save(product);
@@ -35,6 +36,13 @@ createConnection().then(db => {
         res.send(product)
     })
 
+    //Update a single product from list of product
+    app.put('/api/products/:id', async (req: Request, res: Response) => {
+        const product = await productRepository.findOne(req.params.id);
+        productRepository.merge(product, req.body);
+        const result = await productRepository.save(product);
+        res.send(result);
+    })
 
     //server at PORT 5000
     const PORT = process.env.PORT || 5000;

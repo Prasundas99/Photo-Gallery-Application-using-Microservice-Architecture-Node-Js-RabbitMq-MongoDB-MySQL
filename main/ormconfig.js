@@ -1,6 +1,4 @@
 const secret = require('./dist/config').default
-
-
 const config = {
   type: "mongodb",
   url: secret.databaseURL,
@@ -9,9 +7,6 @@ const config = {
   entities: ["dist/entity/*.js"],
   logging: true,
   synchronize: true,
-  cli:{
-    entitiesDir: "src/entity"
-  }
+  cli:{entitiesDir: "src/entity"}
 }
-
 module.exports = config;

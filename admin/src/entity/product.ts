@@ -1,4 +1,4 @@
-import {Column, Entity, PrimaryGeneratedColumn} from "typeorm";
+import { Column, Entity, PrimaryGeneratedColumn } from "typeorm";
 
 @Entity()
 export class Product {
@@ -11,6 +11,6 @@ export class Product {
     @Column()
     image: string;
 
-    @Column({default: 0})
+    @Column({ default: 0 })
     likes: number;
 }

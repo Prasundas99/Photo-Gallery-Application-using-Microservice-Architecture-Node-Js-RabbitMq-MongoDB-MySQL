@@ -73,12 +73,12 @@ createConnection().then(db => {
                 return res.send(products)
             })
 
-            //calling internal api via http call
+            //Liking product
             app.post('/api/products/:id/like', async (req: Request, res: Response) => {
                 const product = await productRepository.findOne(req.params.id)
-                await axios.post(`http://localhost:5000/api/products/${product.admin_id}/like`, {})
                 product.likes++
                 await productRepository.save(product)
+                channel.sendToQueue('product_liked', Buffer.from(JSON.stringify(product)))
                 return res.send(product)
             });
 

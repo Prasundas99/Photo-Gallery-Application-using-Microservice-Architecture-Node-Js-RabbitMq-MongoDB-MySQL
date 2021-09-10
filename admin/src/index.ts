@@ -22,10 +22,24 @@ createConnection().then(db => {
         connection.createChannel((error1, channel) => {
             if (error1)
                  throw error1
+            
+            //Consuming event
+            channel.assertQueue('product_liked', {durable: true})     
         
             const app = express();
             app.use(cors());
             app.use(express.json())
+
+            //Consumers
+            channel.consume('product_liked', async(msg) => {
+                const eventProduct = JSON.parse(msg.content.toString())
+                const StoredProduct = await productRepository.findOne({id: eventProduct.admin_id})
+                productRepository.merge(StoredProduct,{
+                    likes: eventProduct.likes
+                })
+                await productRepository.save(StoredProduct)
+                console.log("Like incremented");
+            }, { noAck: true })
 
 
             //endpoints

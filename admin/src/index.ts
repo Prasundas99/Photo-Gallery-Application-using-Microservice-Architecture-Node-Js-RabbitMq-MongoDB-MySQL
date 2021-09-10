@@ -21,7 +21,7 @@ createConnection().then(db => {
         }
 
         connection.createChannel((error1, channel) => {
-            if(error1) {
+            if (error1) {
                 throw error1
             }
             const app = express();
@@ -42,6 +42,7 @@ createConnection().then(db => {
             app.post('/api/products', async (req: Request, res: Response) => {
                 const product = await productRepository.create(req.body);
                 const result = await productRepository.save(product);
+                channel.sendToQueue('product_created', Buffer.from(JSON.stringify(result)))
                 return res.send(result);
             })
 
@@ -56,12 +57,14 @@ createConnection().then(db => {
                 const product = await productRepository.findOne(req.params.id);
                 productRepository.merge(product, req.body);
                 const result = await productRepository.save(product);
+                channel.sendToQueue('product_updated', Buffer.from(JSON.stringify(result)))
                 return res.send(result);
             })
 
             //Delete a single product
             app.delete('/api/products/:id', async (req: Request, res: Response) => {
                 const result = await productRepository.delete(req.params.id);
+                channel.sendToQueue('product_deleted', Buffer.from(req.params.id))
                 return res.send(result);
             })
 
@@ -79,6 +82,10 @@ createConnection().then(db => {
             app.listen(PORT, () => {
                 console.log(`Server running on port ${PORT} `);
             });
+            process.on('beforeExit', () => {
+                console.log("Closing");
+                connection.close();
+            })
         })
 
     })

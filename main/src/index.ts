@@ -1,14 +1,14 @@
 import * as express from 'express';
 import { Request, Response } from 'express'
 import * as cors from 'cors';
-import * as dotenv from 'dotenv';
 import axios from 'axios'
 
 import { createConnection } from 'typeorm'
 import { Product } from './entity/product';
 
 import * as amqp from 'amqplib/callback_api';
-dotenv.config();
+
+import config from './config'
 
 
 createConnection().then(db => {
@@ -16,23 +16,21 @@ createConnection().then(db => {
     const productRepository = db.getRepository(Product);
 
     //Rabbitmq connection
-    amqp.connect(process.env.RABBITMQ_URL, (error, connection) => {
-        if (error) {
+    amqp.connect(config.rabbitmqUrl, (error, connection) => {
+        if (error) 
             throw error
-        }
 
         connection.createChannel((error1, channel) => {
-            if (error1) {
+            if (error1) 
                 throw error1
-            }
 
+            //Consuming event    
             channel.assertQueue('product_created', { durable: false })
             channel.assertQueue('product_updated', { durable: false })
             channel.assertQueue('product_deleted', { durable: false })
 
 
             const app = express();
-            //middlewares
             app.use(cors());
             app.use(express.json())
 
@@ -75,9 +73,10 @@ createConnection().then(db => {
                 return res.send(products)
             })
 
+            //calling internal api via http call
             app.post('/api/products/:id/like', async (req: Request, res: Response) => {
                 const product = await productRepository.findOne(req.params.id)
-                await axios.post(`http://localhost:8000/api/products/${product.admin_id}/like`, {})
+                await axios.post(`http://localhost:5000/api/products/${product.admin_id}/like`, {})
                 product.likes++
                 await productRepository.save(product)
                 return res.send(product)
@@ -85,7 +84,7 @@ createConnection().then(db => {
 
 
             //server at PORT 5000
-            const PORT = process.env.PORT || 5003;
+            const PORT = config.port;
             app.listen(PORT, () => {
                 console.log(`Server running on port ${PORT} `);
             });

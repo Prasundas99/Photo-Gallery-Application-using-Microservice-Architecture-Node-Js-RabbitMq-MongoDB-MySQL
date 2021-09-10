@@ -1,31 +1,29 @@
 import * as express from 'express';
 import { Request, Response } from 'express'
 import * as cors from 'cors';
-import * as dotenv from 'dotenv';
-
+//For DB
 import { createConnection } from 'typeorm'
 import { Product } from './entity/product';
-
+//For eventQueue
 import * as amqp from 'amqplib/callback_api';
 
-dotenv.config();
+import config from './config'
+
 
 createConnection().then(db => {
     //db details
     const productRepository = db.getRepository(Product);
 
     //Rabbitmq connection
-    amqp.connect(process.env.RABBITMQ_URL, (error, connection) => {
-        if (error) {
+    amqp.connect(config.rabbitmqUrl, (error, connection) => {
+        if (error)  
             throw error
-        }
 
         connection.createChannel((error1, channel) => {
-            if (error1) {
-                throw error1
-            }
+            if (error1)
+                 throw error1
+        
             const app = express();
-            //middlewares
             app.use(cors());
             app.use(express.json())
 
@@ -78,10 +76,10 @@ createConnection().then(db => {
 
 
             //server at PORT 5000
-            const PORT = process.env.PORT || 5002;
-            app.listen(PORT, () => {
-                console.log(`Server running on port ${PORT} `);
+            app.listen(config.port, () => {
+                console.log(`Server running on port ${config.port} `);
             });
+            //Existing rabbitMQ server on closing
             process.on('beforeExit', () => {
                 console.log("Closing");
                 connection.close();
